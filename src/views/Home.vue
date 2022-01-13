@@ -6,12 +6,14 @@
 </template>
 
 <script lang="ts">
+import { defineAsyncComponent } from "vue";
 import { Options, Vue } from "vue-class-component";
-import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
 
 @Options({
   components: {
-    HelloWorld,
+    HelloWorld: defineAsyncComponent(
+      () => import(/* webpackPrefetch: true */ "@/components/HelloWorld.vue")
+    ),
   },
 })
 export default class Home extends Vue {}
