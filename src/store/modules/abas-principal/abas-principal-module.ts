@@ -6,7 +6,11 @@ import {
   VuexModule,
 } from "vuex-module-decorators";
 import store from "@/store";
-import { IAbaPrincipalinputModel, IAbaPrincipalModel } from "./aba-model";
+import {
+  IAbaPrincipalinputModel,
+  IAbaPrincipalModel,
+  TipoAbaEnum,
+} from "./aba-model";
 
 @Module({
   namespaced: true,
@@ -21,7 +25,8 @@ class AbasPrincipalStoreModule extends VuexModule {
     {
       id: this.idAbaSequencial,
       nome: "aba 1",
-      url: "iframes/iframe-teste.html?id=1",
+      url: "components/HelloWorld.vue",
+      tipo: TipoAbaEnum.Vue,
     },
   ];
   idAbaAtual = this.idAbaSequencial;
@@ -82,5 +87,6 @@ window.AdicionarAba = function (nome: string, id: number, url: string) {
   AbasPrincipalModule.adicionarAba({
     nome: nome,
     url: url,
+    tipo: TipoAbaEnum.Iframe,
   });
 };

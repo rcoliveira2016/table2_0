@@ -2,11 +2,12 @@
   <div class="home">
     <img alt="Vue logo" src="../assets/logo.png" />
     <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
+    <component :is="teste('HelloWorld')" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, h, VNodeTypes } from "vue";
 import { Options, Vue } from "vue-class-component";
 
 @Options({
@@ -16,5 +17,14 @@ import { Options, Vue } from "vue-class-component";
     ),
   },
 })
-export default class Home extends Vue {}
+export default class Home extends Vue {
+  teste(nome: string): VNodeTypes {
+    return h(
+      defineAsyncComponent(
+        () =>
+          import(/* webpackPrefetch: true */ "@/components/" + nome + ".vue")
+      )
+    );
+  }
+}
 </script>

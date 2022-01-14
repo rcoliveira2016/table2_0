@@ -27,15 +27,21 @@
         </div>
       </div>
       <div class="aba-conteudo">
-        <iframe
-          v-for="(item, index) in listaAbas"
-          v-show="estaSelecionado(item.id)"
-          :key="index"
-          :src="item.url"
-          :name="item.id"
-          :title="item.nome"
-          frameborder="0"
-        ></iframe>
+        <template v-for="(item, index) in listaAbas" :key="index">
+          <iframe
+            v-if="heTipoIframe(item)"
+            v-show="estaSelecionado(item.id)"
+            :src="item.url"
+            :name="item.id"
+            :title="item.nome"
+            frameborder="0"
+          />
+          <component
+            v-else
+            :is="componentVue(item)"
+            v-show="estaSelecionado(item.id)"
+          />
+        </template>
       </div>
     </div>
   </div>
@@ -44,7 +50,11 @@
 import { Options, Vue } from "vue-class-component";
 import draggable from "vuedraggable";
 import { AbasPrincipalModule } from "@/store/modules/abas-principal/abas-principal-module";
-import { IAbaPrincipalModel } from "@/store/modules/abas-principal/aba-model";
+import {
+  IAbaPrincipalModel,
+  TipoAbaEnum,
+} from "@/store/modules/abas-principal/aba-model";
+import { defineAsyncComponent, h, VNodeTypes } from "vue";
 
 @Options({
   name: "abas",
@@ -58,6 +68,16 @@ export default class Abas extends Vue {
   }
   set listaAbas(valor: IAbaPrincipalModel[]) {
     AbasPrincipalModule.adicionarAbas(valor);
+  }
+  componentVue(aba: IAbaPrincipalModel): VNodeTypes {
+    return h(
+      defineAsyncComponent(
+        () => import(/* webpackPrefetch: true */ "@/".concat(aba.url))
+      )
+    );
+  }
+  heTipoIframe(aba: IAbaPrincipalModel): boolean {
+    return aba.tipo == TipoAbaEnum.Iframe;
   }
   estaSelecionado(id: number): boolean {
     return AbasPrincipalModule.idAbaAtual == id;
@@ -73,6 +93,7 @@ export default class Abas extends Vue {
     AbasPrincipalModule.adicionarAba({
       nome: "aba " + idAtual,
       url: `iframes/iframe-teste.html?id=${idAtual}`,
+      tipo: TipoAbaEnum.Iframe,
     });
   }
   remover(id: number): void {
@@ -127,10 +148,13 @@ div.elemento.selecionado {
 }
 .aba-container {
   display: flex;
+  max-width: calc(100% - 2rem);
+  overflow: hidden;
 }
 .aba-itens {
   display: flex;
-  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
 }
 .aba-conteudo iframe {
   width: 100%;
