@@ -2,12 +2,20 @@
   <div class="about">
     <div class="aba">
       <div class="aba-itens">
-        <draggable :list="listaAbas" item-key="id" class="aba-container">
+        <draggable
+          :list="listaAbas"
+          item-key="id"
+          class="aba-container"
+          tag="transition-group"
+          :component-data="{ name: 'list', type: 'transition', tag: 'div' }"
+          name="list"
+        >
           <template #item="{ element }">
             <div
               class="elemento"
               :class="selecionadoElemento(element.id)"
               @click.capture="selecionarAba(element.id)"
+              @click.middle="remover(element.id)"
             >
               <span>{{ element.nome }}</span>
               <a><span @click="remover(element.id)">X</span></a>
@@ -80,6 +88,7 @@ export default class Abas extends Vue {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-left: 0.5rem;
 }
 .aba-btn-add {
   border-radius: 50%;
@@ -99,6 +108,7 @@ div.elemento {
   border-top-left-radius: 0.8rem;
   border-top-right-radius: 0.8rem;
   cursor: pointer;
+  margin-right: 0.1rem;
 }
 div.elemento a {
   color: #000;
@@ -120,8 +130,21 @@ div.elemento.selecionado {
 }
 .aba-itens {
   display: flex;
+  width: 100%;
 }
 .aba-conteudo iframe {
   width: 100%;
+}
+
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.3s ease-in-out;
+  z-index: -1;
+}
+.list-enter,
+.list-enter-from,
+.list-leave-to,
+.list-leave-active {
+  transform: translateX(-100%);
 }
 </style>
