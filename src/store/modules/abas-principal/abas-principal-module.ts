@@ -9,27 +9,29 @@ import store from "@/store";
 import {
   IAbaPrincipalinputModel,
   IAbaPrincipalModel,
+  IAbaPrincipalVueModel,
   TipoAbaEnum,
 } from "./aba-model";
-
+type bool = { heVerdadeiro: boolean };
 @Module({
   namespaced: true,
-  name: "menuBar",
+  name: "AbasPrincipalStoreModule",
   store: store,
   dynamic: true,
 })
 class AbasPrincipalStoreModule extends VuexModule {
-  idAbaSequencial = 1;
-
-  abas: IAbaPrincipalModel[] = [
-    {
-      id: this.idAbaSequencial,
-      nome: "aba 1",
-      url: "components/HelloWorld.vue",
-      tipo: TipoAbaEnum.Vue,
-    },
-  ];
+  idAbaSequencial = 0;
+  abas: IAbaPrincipalModel[] = [];
   idAbaAtual = this.idAbaSequencial;
+
+  get abaSelecionadaAtual(): IAbaPrincipalModel | undefined {
+    return this.abas.find((x) => x.id == this.idAbaAtual);
+  }
+  get abaSelecionadaAtualHeVue(): boolean {
+    const aba = this.abas.find((x) => x.id == this.idAbaAtual);
+    if (!aba) return false;
+    return aba.tipo == TipoAbaEnum.Vue;
+  }
 
   @Mutation
   adicionarAbas(abas: IAbaPrincipalModel[]): void {
@@ -43,23 +45,30 @@ class AbasPrincipalStoreModule extends VuexModule {
 
   @Mutation
   setarAba(id: number): void {
-    console.log(id);
+    this.idAbaAtual = id;
+  }
+
+  @Mutation
+  setarAbaPorIndex(index: number): void {
+    const id = this.abas[index].id;
+    if (!id) return;
     this.idAbaAtual = id;
   }
 
   @Action
-  adicionarAba(aba: IAbaPrincipalinputModel): void {
-    this.acresentarIdAbaSequencial();
-    const novaAba: IAbaPrincipalModel = {
-      ...aba,
-      id: this.idAbaSequencial,
-    };
-    this.abas.push(novaAba);
+  async adicionarAba(aba: IAbaPrincipalinputModel): Promise<void> {
+    const valor = await this.verificarRegraDiconarAba(aba);
+    if (!valor) return;
+
+    const novaAba = await this.adicionarAbaInterna(aba);
+    console.log(novaAba);
+    this.setarAba(novaAba.id);
   }
 
   @Action
   removerAba(id: number): void {
     const index = this.abas.findIndex((x) => x.id == id);
+    this.abaVueRepitida(this.abas[index]);
     this.abas.splice(index, 1);
 
     if (id != this.idAbaAtual) return;
@@ -71,6 +80,50 @@ class AbasPrincipalStoreModule extends VuexModule {
     if (proximaAba) {
       this.setarAba(proximaAba.id);
     }
+  }
+
+  @Action
+  async verificarRegraDiconarAba(
+    aba: IAbaPrincipalinputModel
+  ): Promise<boolean> {
+    if (aba.tipo != TipoAbaEnum.Vue) return true;
+    const ab = await this.abaVueRepitida(aba);
+    console.log(ab);
+    return ab;
+  }
+
+  @Action
+  async abaVueRepitida(aba: IAbaPrincipalinputModel): Promise<boolean> {
+    const abaNova = this.abas.find(
+      (x) =>
+        x.tipo == TipoAbaEnum.Vue &&
+        x.nameRoute == (aba as IAbaPrincipalVueModel).nameRoute
+    ) as IAbaPrincipalVueModel;
+    if (!abaNova) return true;
+
+    if (abaNova) {
+      if (typeof abaNova.resetStore == "function") abaNova.resetStore();
+      else if (store.hasModule(abaNova.resetStore))
+        store.commit(abaNova.resetStore);
+
+      this.setarAba(abaNova.id);
+      return false;
+    }
+
+    return true;
+  }
+
+  @Action
+  private async adicionarAbaInterna(
+    aba: IAbaPrincipalinputModel
+  ): Promise<IAbaPrincipalModel> {
+    this.acresentarIdAbaSequencial();
+    const novaAba: IAbaPrincipalModel = {
+      ...aba,
+      id: this.idAbaSequencial,
+    };
+    this.abas.push(novaAba);
+    return novaAba;
   }
 }
 

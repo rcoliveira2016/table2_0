@@ -8,18 +8,15 @@
       :title="item.nome"
       frameborder="0"
     />
-    <component
-      v-else
-      :is="componentVue(item)"
-      v-show="estaSelecionado(item.id)"
-    />
   </template>
+  <router-view v-if="mostraRouterView" />
 </template>
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { AbasPrincipalModule } from "@/store/modules/abas-principal/abas-principal-module";
 import {
   IAbaPrincipalModel,
+  IAbaPrincipalVueModel,
   TipoAbaEnum,
 } from "@/store/modules/abas-principal/aba-model";
 import { defineAsyncComponent, h, VNodeTypes } from "vue";
@@ -27,16 +24,16 @@ import { defineAsyncComponent, h, VNodeTypes } from "vue";
   name: "aba-conteudo",
 })
 export default class AbaConteudo extends Vue {
+  get mostraRouterView(): boolean {
+    return AbasPrincipalModule.abaSelecionadaAtualHeVue;
+  }
   get listaAbas(): IAbaPrincipalModel[] {
-    return AbasPrincipalModule.abas;
+    return AbasPrincipalModule.abas.filter((x) => x.tipo == TipoAbaEnum.Iframe);
   }
-  set listaAbas(valor: IAbaPrincipalModel[]) {
-    AbasPrincipalModule.adicionarAbas(valor);
-  }
-  componentVue(aba: IAbaPrincipalModel): VNodeTypes {
+  componentVue(aba: IAbaPrincipalVueModel): VNodeTypes {
     return h(
       defineAsyncComponent(
-        () => import(/* webpackPrefetch: true */ "@/".concat(aba.url))
+        () => import(/* webpackPrefetch: true */ "@/".concat(aba.nameRoute))
       )
     );
   }
