@@ -19,6 +19,7 @@ import { Options, Vue } from "vue-class-component";
 })
 export default class Home extends Vue {
   teste(nome: string): VNodeTypes {
+    this.$refs.input;
     return h(
       defineAsyncComponent(
         () =>

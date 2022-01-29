@@ -1,7 +1,7 @@
 <template>
   <div class="aba">
     <div class="aba-itens">
-      <itens-aba />
+      <itens-aba ref="aba" />
       <btn-add-item-aba />
     </div>
     <div class="aba-conteudo">
@@ -36,7 +36,12 @@ export default class AbaRotas extends Vue {
   mounted(): void {
     this.$watch(() => AbasPrincipalModule.idAbaAtual, this.trocarAba);
     this.trocarAba();
+    console.log(this.$refs.aba.listaAbas);
   }
+
+  declare $refs: {
+    aba: ItensAba;
+  };
 }
 </script>
 <style scoped>
